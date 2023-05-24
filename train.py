@@ -14,29 +14,24 @@ from tqdm import tqdm
 from east_dataset import EASTDataset
 from dataset import SceneTextDataset
 from model import EAST
-
+from utils import read_json, seed_everything
 
 def parse_args():
     parser = ArgumentParser()
 
-    # Conventional args
-    parser.add_argument('--data_dir', type=str,
-                        default=os.environ.get('SM_CHANNEL_TRAIN', '../data/medical'))
-    parser.add_argument('--model_dir', type=str, default=os.environ.get('SM_MODEL_DIR',
-                                                                        'trained_models'))
-
-    parser.add_argument('--device', default='cuda' if cuda.is_available() else 'cpu')
-    parser.add_argument('--num_workers', type=int, default=0)
-
-    parser.add_argument('--image_size', type=int, default=2048)
-    parser.add_argument('--input_size', type=int, default=1024)
-    parser.add_argument('--batch_size', type=int, default=8)
-    parser.add_argument('--learning_rate', type=float, default=1e-3)
-    parser.add_argument('--max_epoch', type=int, default=150)
-    parser.add_argument('--save_interval', type=int, default=5)
-    parser.add_argument('--ignore_tags', type=list, default=['masked', 'excluded-region', 'maintable', 'stamp'])
+    parser.add_argument(
+        "-c",
+        "--config",
+        default="./config.json",
+        type=str,
+        help="config file path (default: ./config.json)",
+    )
 
     args = parser.parse_args()
+
+    args = read_json(args.config)
+
+    seed_everything(args.seed)
 
     if args.input_size % 32 != 0:
         raise ValueError('`input_size` must be a multiple of 32')
@@ -44,8 +39,22 @@ def parse_args():
     return args
 
 
-def do_training(data_dir, model_dir, device, image_size, input_size, num_workers, batch_size,
-                learning_rate, max_epoch, save_interval, ignore_tags):
+def do_training(
+                data_dir,
+                model_dir,
+                device,
+                image_size,
+                input_size,
+                num_workers,
+                batch_size,
+                learning_rate,
+                max_epoch,
+                save_interval,
+                ignore_tags,
+                seed,
+                extractor_pth,
+                enable_amp
+                ):
     dataset = SceneTextDataset(
         data_dir,
         split='train',
@@ -63,11 +72,11 @@ def do_training(data_dir, model_dir, device, image_size, input_size, num_workers
     )
 
     device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
-    model = EAST()
+    model = EAST(extractor_pth=extractor_pth)
     model.to(device)
     optimizer = torch.optim.Adam(model.parameters(), lr=learning_rate)
     scheduler = lr_scheduler.MultiStepLR(optimizer, milestones=[max_epoch // 2], gamma=0.1)
-
+    scaler = torch.cuda.amp.GradScaler()
     model.train()
     for epoch in range(max_epoch):
         epoch_loss, epoch_start = 0, time.time()
@@ -75,10 +84,21 @@ def do_training(data_dir, model_dir, device, image_size, input_size, num_workers
             for img, gt_score_map, gt_geo_map, roi_mask in train_loader:
                 pbar.set_description('[Epoch {}]'.format(epoch + 1))
 
-                loss, extra_info = model.train_step(img, gt_score_map, gt_geo_map, roi_mask)
                 optimizer.zero_grad()
-                loss.backward()
-                optimizer.step()
+
+                # Mixed Precision으로 Operation들을 casting
+                with torch.cuda.amp.autocast(enable_amp):
+                    loss, extra_info = model.train_step(img, gt_score_map, gt_geo_map, roi_mask)
+
+                # Loss를 scaling한 후에 backward진행
+                scaler.scale(loss).backward()
+                # 원래 scale에 맞추어 gradient를 unscale하고 optimizer를 통한 gradient update
+                scaler.step(optimizer)
+                # 다음 iter를 위한 scale update
+                scaler.update()
+
+                scaler.unscale_(optimizer)
+                torch.nn.utils.clip_grad_norm_(model.parameters(), 5)
 
                 loss_val = loss.item()
                 epoch_loss += loss_val
