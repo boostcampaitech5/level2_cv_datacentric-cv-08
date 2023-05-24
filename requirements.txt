@@ -1,0 +1,13 @@
+lanms==1.0.2
+numpy==1.21.3
+opencv-python==4.5.4.58
+shapely==1.7.1
+tqdm==4.62.3
+matplotlib
+albumentations==1.1.0
+torchvision==0.8.2
+torch==1.7.1
+Pillow==9.5.0
+seaborn==0.12.2
+pandas==2.0.1
+easydict==1.10
