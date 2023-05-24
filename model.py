@@ -62,11 +62,11 @@ class VGG(nn.Module):
 
 
 class Extractor(nn.Module):
-    def __init__(self, pretrained):
+    def __init__(self, pretrained, extractor_pth):
         super().__init__()
         vgg16_bn = VGG(make_layers(cfg, batch_norm=True))
         if pretrained:
-            vgg16_bn.load_state_dict(torch.load('./pths/vgg16_bn-6c64b313.pth'))
+            vgg16_bn.load_state_dict(torch.load(extractor_pth))
         self.features = vgg16_bn.features
 
     def forward(self, x):
@@ -217,9 +217,9 @@ class Output(nn.Module):
 
 
 class EAST(nn.Module):
-    def __init__(self, pretrained=True):
+    def __init__(self, pretrained=True, extractor_pth="/opt/ml/input/code/pths/vgg16_bn-6c64b313.pth"):
         super(EAST, self).__init__()
-        self.extractor = Extractor(pretrained)
+        self.extractor = Extractor(pretrained, extractor_pth)
         self.merge = Merge()
         self.output = Output()
 
