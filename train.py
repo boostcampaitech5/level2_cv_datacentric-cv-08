@@ -58,8 +58,9 @@ def do_training(
     enable_amp,
     project_name,
     val_ratio,
-    val_batch_size
-):
+    val_batch_size,
+    patience_limit,                
+):    
     dataset = SceneTextDataset(
         data_dir,
         split="train",
@@ -93,6 +94,11 @@ def do_training(
 
     if enable_amp:
         scaler = torch.cuda.amp.GradScaler()
+        
+    # Early Stop
+    best_mean_loss = float('inf')
+    patience_limit = patience_limit
+    patience = 0
 
     for epoch in range(max_epoch):
         model.train()
@@ -145,7 +151,7 @@ def do_training(
 
         scheduler.step()
 
-        mean_loss = epoch_loss / num_batches
+        mean_loss = epoch_loss / train_num_batches
         print('Mean loss: {:.4f} | Elapsed time: {}'.format(
             mean_loss, timedelta(seconds=time.time() - epoch_start)))
 
