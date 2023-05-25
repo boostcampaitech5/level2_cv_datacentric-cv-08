@@ -55,7 +55,8 @@ def do_training(
                 seed,
                 extractor_pth,
                 enable_amp,
-                project_name
+                project_name,
+                patience,                
                 ):    
     dataset = SceneTextDataset(
         data_dir,
@@ -81,6 +82,12 @@ def do_training(
     
     if enable_amp:
         scaler = torch.cuda.amp.GradScaler()
+        
+    # Early Stop
+    best_mean_loss = float('inf')
+    best_model = None
+    patience_limit = args.patience
+    patience = 0
         
     model.train()
     for epoch in range(max_epoch):
@@ -126,20 +133,34 @@ def do_training(
 
         scheduler.step()
 
+        mean_loss = epoch_loss / num_batches
         print('Mean loss: {:.4f} | Elapsed time: {}'.format(
-            epoch_loss / num_batches, timedelta(seconds=time.time() - epoch_start)))
+            mean_loss, timedelta(seconds=time.time() - epoch_start)))
 
         wandb.log({
             'epoch': epoch,
-            'train/mean_loss': epoch_loss / num_batches,
+            'train/mean_loss': mean_loss,
         })
         
         if (epoch + 1) % save_interval == 0:
             if not osp.exists(model_dir):
                 os.makedirs(model_dir)
-
             ckpt_fpath = osp.join(model_dir, 'latest.pth')
             torch.save(model.state_dict(), ckpt_fpath)
+        
+        # Early Stop
+        if best_mean_loss > mean_loss:
+            best_mean_loss = mean_loss
+            patience = 0
+            
+            if not osp.exists(model_dir):
+                os.makedirs(model_dir)
+            ckpt_fpath = osp.join(model_dir, 'best.pth')
+            torch.save(model.state_dict(), ckpt_fpath)
+        else:
+            patience += 1
+            if patience >= patience_limit:
+                break
 
 def main(args):
     wandb.init(
