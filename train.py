@@ -42,24 +42,25 @@ def parse_args():
 
 
 def do_training(
-    data_dir,
-    model_dir,
-    device,
-    image_size,
-    input_size,
-    num_workers,
-    batch_size,
-    learning_rate,
-    max_epoch,
-    save_interval,
-    ignore_tags,
-    seed,
-    extractor_pth,
-    enable_amp,
-    project_name,
-    val_ratio,
-    val_batch_size
-):
+                data_dir,
+                model_dir,
+                device,
+                image_size,
+                input_size,
+                num_workers,
+                batch_size,
+                learning_rate,
+                max_epoch,
+                save_interval,
+                ignore_tags,
+                seed,
+                extractor_pth,
+                enable_amp,
+                project_name,
+                val_ratio,
+                val_batch_size,
+                patience,                
+                ):    
     dataset = SceneTextDataset(
         data_dir,
         split="train",
@@ -93,6 +94,11 @@ def do_training(
 
     if enable_amp:
         scaler = torch.cuda.amp.GradScaler()
+        
+    # Early Stop
+    best_mean_loss = float('inf')
+    patience_limit = args.patience
+    patience = 0
 
     model.train()
     for epoch in range(max_epoch):
@@ -145,16 +151,17 @@ def do_training(
 
         scheduler.step()
 
+        mean_loss = epoch_loss / train_num_batches
         print(
             "Mean loss: {:.4f} | Elapsed time: {}".format(
-                epoch_loss / train_num_batches, timedelta(seconds=time.time() - epoch_start)
+                mean_loss, timedelta(seconds=time.time() - epoch_start)
             )
         )
 
         wandb.log(
             {
                 "epoch": epoch,
-                "train/mean_loss": epoch_loss / train_num_batches,
+                "train/mean_loss": mean_loss,
             }
         )
 
@@ -199,17 +206,27 @@ def do_training(
                 }
             )        
 
-
-                    
-
-
-
         if (epoch + 1) % save_interval == 0:
             if not osp.exists(model_dir):
                 os.makedirs(model_dir)
 
             ckpt_fpath = osp.join(model_dir, "latest.pth")
             torch.save(model.state_dict(), ckpt_fpath)
+        
+        # Early Stop
+        if best_mean_loss > mean_loss:
+            best_mean_loss = mean_loss
+            patience = 0
+            
+            os.makedirs(model_dir, exist_ok=True)
+            ckpt_fpath = osp.join(model_dir, 'best.pth')
+            torch.save(model.state_dict(), ckpt_fpath)
+        else:
+            patience += 1
+            if patience >= patience_limit:
+                break
+    
+    print(f"Best Mean Loss : {best_mean_loss}")
 
 
 def main(args):
