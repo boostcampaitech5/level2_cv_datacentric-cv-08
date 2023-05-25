@@ -87,7 +87,6 @@ def do_training(
         
     # Early Stop
     best_mean_loss = float('inf')
-    best_model = None
     patience_limit = args.patience
     patience = 0
         
@@ -145,8 +144,7 @@ def do_training(
         })
         
         if (epoch + 1) % save_interval == 0:
-            if not osp.exists(model_dir):
-                os.makedirs(model_dir)
+            os.makedirs(model_dir, exist_ok=True)
             ckpt_fpath = osp.join(model_dir, 'latest.pth')
             torch.save(model.state_dict(), ckpt_fpath)
         
@@ -155,14 +153,15 @@ def do_training(
             best_mean_loss = mean_loss
             patience = 0
             
-            if not osp.exists(model_dir):
-                os.makedirs(model_dir)
+            os.makedirs(model_dir, exist_ok=True)
             ckpt_fpath = osp.join(model_dir, 'best.pth')
             torch.save(model.state_dict(), ckpt_fpath)
         else:
             patience += 1
             if patience >= patience_limit:
                 break
+    
+    print(f"Best Mean Loss : {best_mean_loss}")
 
 def main(args):
     wandb.init(
