@@ -70,7 +70,7 @@ def do_training(
     )
     dataset = EASTDataset(dataset)
     train_size = int(len(dataset) * (1 - val_ratio))
-    valid_size = int(len(dataset) * val_ratio)
+    valid_size = len(dataset) - train_size
     trainset, validset = random_split(dataset, [train_size, valid_size])
 
     train_num_batches = math.ceil(len(trainset) / batch_size)
