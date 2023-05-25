@@ -345,12 +345,17 @@ class SceneTextDataset(Dataset):
                  drop_under_threshold=1,
                  augmentation=None,
                  normalize=True):
-        with open(osp.join(root_dir, 'ufo/{}.json'.format(split)), 'r') as f:
-            anno = json.load(f)
+        
+        if split == 'train':
+            with open(osp.join(root_dir, 'ufo/{}.json'.format(split)), 'r') as f:
+                anno = json.load(f)
+        else:
+            with open(f'./annotations/{split}.json', 'r') as f:
+                anno = json.load(f)            
 
         self.anno = anno
         self.image_fnames = sorted(anno['images'].keys())
-        self.image_dir = osp.join(root_dir, 'img', split)
+        self.image_dir = osp.join(root_dir, 'img', 'train')
 
         self.image_size, self.crop_size = image_size, crop_size
 
