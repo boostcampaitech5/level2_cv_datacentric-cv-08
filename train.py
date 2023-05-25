@@ -76,7 +76,8 @@ def do_training(
     model.to(device)
     optimizer = torch.optim.Adam(model.parameters(), lr=learning_rate)
     scheduler = lr_scheduler.MultiStepLR(optimizer, milestones=[max_epoch // 2], gamma=0.1)
-    scaler = torch.cuda.amp.GradScaler()
+    if enable_amp:
+        scaler = torch.cuda.amp.GradScaler()
     model.train()
     for epoch in range(max_epoch):
         epoch_loss, epoch_start = 0, time.time()
@@ -85,20 +86,24 @@ def do_training(
                 pbar.set_description('[Epoch {}]'.format(epoch + 1))
 
                 optimizer.zero_grad()
+                if enable_amp:
+                    # Mixed Precision으로 Operation들을 casting
+                    with torch.cuda.amp.autocast(enable_amp):
+                        loss, extra_info = model.train_step(img, gt_score_map, gt_geo_map, roi_mask)
 
-                # Mixed Precision으로 Operation들을 casting
-                with torch.cuda.amp.autocast(enable_amp):
+                    # Loss를 scaling한 후에 backward진행
+                    scaler.scale(loss).backward()
+                    # 원래 scale에 맞추어 gradient를 unscale하고 optimizer를 통한 gradient update
+                    scaler.step(optimizer)
+                    # 다음 iter를 위한 scale update
+                    scaler.update()
+
+                    scaler.unscale_(optimizer)
+                    torch.nn.utils.clip_grad_norm_(model.parameters(), 5)
+                else:
                     loss, extra_info = model.train_step(img, gt_score_map, gt_geo_map, roi_mask)
-
-                # Loss를 scaling한 후에 backward진행
-                scaler.scale(loss).backward()
-                # 원래 scale에 맞추어 gradient를 unscale하고 optimizer를 통한 gradient update
-                scaler.step(optimizer)
-                # 다음 iter를 위한 scale update
-                scaler.update()
-
-                scaler.unscale_(optimizer)
-                torch.nn.utils.clip_grad_norm_(model.parameters(), 5)
+                    loss.backward()
+                    optimizer.step()
 
                 loss_val = loss.item()
                 epoch_loss += loss_val
