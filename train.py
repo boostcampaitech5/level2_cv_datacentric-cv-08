@@ -80,7 +80,7 @@ def do_training(
     if val_ratio > 0:
         valid_num_batches = math.ceil(len(validset) / val_batch_size)
         valid_loader = DataLoader(
-                validset, batch_size=val_batch_size, shuffle=True, num_workers=num_workers
+                validset, batch_size=val_batch_size, shuffle=False, num_workers=num_workers
             )    
 
     device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
