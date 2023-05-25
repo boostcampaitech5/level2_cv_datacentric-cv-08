@@ -59,8 +59,10 @@ def do_training(
     project_name,
     val_ratio,
     val_batch_size,
-    patience_limit,                
-):    
+    patience_limit,
+    num_accumulation_step                
+):
+    assert num_accumulation_step >= 0, "Gradient Accumulation step must be >= 0"
     dataset = SceneTextDataset(
         data_dir,
         split="train",
@@ -104,29 +106,46 @@ def do_training(
         model.train()
         epoch_loss, epoch_start = 0, time.time()
         with tqdm(total=train_num_batches) as pbar:
-            for img, gt_score_map, gt_geo_map, roi_mask in train_loader:
+            for idx, (img, gt_score_map, gt_geo_map, roi_mask) in enumerate(train_loader):
                 pbar.set_description("[Epoch {}]".format(epoch + 1))
 
-                optimizer.zero_grad()
                 if enable_amp:
                     # Mixed Precision으로 Operation들을 casting
                     with torch.cuda.amp.autocast(enable_amp):
                         loss, extra_info = model.train_step(
                             img, gt_score_map, gt_geo_map, roi_mask
                         )
+                    if num_accumulation_step == 0:
+                        optimizer.zero_grad()
+                        # Loss를 scaling한 후에 backward진행
+                        scaler.scale(loss).backward()
+                        # 원래 scale에 맞추어 gradient를 unscale하고 optimizer를 통한 gradient update
+                        scaler.step(optimizer)
+                        # 다음 iter를 위한 scale update
+                        scaler.update()
+                    if num_accumulation_step > 0:
+                        scaler.scale(loss).backward()
+                        if ((idx + 1) % num_accumulation_step == 0) or (idx + 1 == len(train_loader)):
+                            scaler.step(optimizer)
+                            # 다음 iter를 위한 scale update
+                            scaler.update()                          
+                            optimizer.zero_grad()
 
-                    # Loss를 scaling한 후에 backward진행
-                    scaler.scale(loss).backward()
-                    # 원래 scale에 맞추어 gradient를 unscale하고 optimizer를 통한 gradient update
-                    scaler.step(optimizer)
-                    # 다음 iter를 위한 scale update
-                    scaler.update()
+
                 else:
                     loss, extra_info = model.train_step(
                         img, gt_score_map, gt_geo_map, roi_mask
                     )
-                    loss.backward()
-                    optimizer.step()
+                    if num_accumulation_step == 0:
+                        optimizer.zero_grad()
+                        loss.backward()
+                        optimizer.step()
+                    if num_accumulation_step > 0:
+                        loss = loss / num_accumulation_step
+                        loss.backward()
+                        if ((idx + 1) % num_accumulation_step == 0) or (idx + 1 == len(train_loader)):
+                            optimizer.step()
+                            optimizer.zero_grad()
 
                 loss_val = loss.item()
                 epoch_loss += loss_val
