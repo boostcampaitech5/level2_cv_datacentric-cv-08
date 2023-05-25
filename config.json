@@ -20,6 +20,6 @@
     "enable_amp": false,
     "project_name": "knh_test_validation",
     "val_ratio": 0,
-    "val_batch_size": 1
-    "patience": 5
+    "val_batch_size": 1,
+    "patience_limit": 5
 }

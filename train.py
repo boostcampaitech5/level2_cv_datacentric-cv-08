@@ -59,7 +59,7 @@ def do_training(
                 project_name,
                 val_ratio,
                 val_batch_size,
-                patience,                
+                patience_limit,                
                 ):    
     dataset = SceneTextDataset(
         data_dir,
@@ -97,7 +97,7 @@ def do_training(
         
     # Early Stop
     best_mean_loss = float('inf')
-    patience_limit = args.patience
+    patience_limit = patience_limit
     patience = 0
 
     for epoch in range(max_epoch):
