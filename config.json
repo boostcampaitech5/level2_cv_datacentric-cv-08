@@ -12,5 +12,6 @@
     "learning_rate" : 1e-3,
     "save_interval" : 5,
     "ignore_tags" : ["masked", "excluded-region", "maintable", "stamp"],
-    "enable_amp" : false
+    "enable_amp" : false,
+    "project_name" : "kgw_base"
 }
