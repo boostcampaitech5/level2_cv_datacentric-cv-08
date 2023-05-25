@@ -100,8 +100,8 @@ def do_training(
     patience_limit = args.patience
     patience = 0
 
-    model.train()
     for epoch in range(max_epoch):
+        model.train()
         epoch_loss, epoch_start = 0, time.time()
         with tqdm(total=train_num_batches) as pbar:
             for img, gt_score_map, gt_geo_map, roi_mask in train_loader:
