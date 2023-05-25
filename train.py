@@ -97,9 +97,6 @@ def do_training(
                     scaler.step(optimizer)
                     # 다음 iter를 위한 scale update
                     scaler.update()
-
-                    scaler.unscale_(optimizer)
-                    torch.nn.utils.clip_grad_norm_(model.parameters(), 5)
                 else:
                     loss, extra_info = model.train_step(img, gt_score_map, gt_geo_map, roi_mask)
                     loss.backward()
