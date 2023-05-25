@@ -40,7 +40,6 @@ def parse_args():
 
     return args
 
-
 def do_training(
                 data_dir,
                 model_dir,
@@ -55,7 +54,8 @@ def do_training(
                 ignore_tags,
                 seed,
                 extractor_pth,
-                enable_amp
+                enable_amp,
+                project_name
                 ):    
     dataset = SceneTextDataset(
         data_dir,
@@ -141,17 +141,15 @@ def do_training(
             ckpt_fpath = osp.join(model_dir, 'latest.pth')
             torch.save(model.state_dict(), ckpt_fpath)
 
-
 def main(args):
     wandb.init(
         entity="level2-hiboostcamp-2",
         project="data-centric",
-        name="kgw_base", # check !
+        name=args.project_name,
         config=args
     )
     
     do_training(**args.__dict__)
-
 
 if __name__ == '__main__':
     args = parse_args()
