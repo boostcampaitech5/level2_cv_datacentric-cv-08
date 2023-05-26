@@ -1,64 +1,66 @@
-from typing import Optional, Union, List
-from abc import abstractmethod
 import json
 import os
+from abc import abstractmethod
+from typing import List, Optional, Union
 
-class BaseLabelConverter():
+
+class BaseLabelConverter:
     """
     annotation 파일을 UFO 형식으로 바꿔주는 base class입니다.
-    
-    annotation 파일 형식에 따라 `anno_filename`, `anno_img_width`, 
+
+    annotation 파일 형식에 따라 `anno_filename`, `anno_img_width`,
     `anno_img_heigth`, `anno_bboxes`의 구현이 필요합니다.
-    
+
     Attributes:
         json_path: 변환할 annotation 파일 path
         anno_ufo: UFO 형식으로 변환된 annotation 객체
         anno_words: UFO 형식의 word 객체
     """
+
     def __init__(self, json_path: str):
         self.json_path = json_path
         self.anno_ufo = dict()
         self.anno_words = dict()
-        
-        with open(self.json_path, 'r') as f:
+
+        with open(self.json_path, "r") as f:
             self.anno_obj = json.load(f)
-    
+
     @property
     @abstractmethod
     def anno_filename(self) -> str:
         """원본 annotation의 파일명을 반환합니다.
-        
+
         str 형식으로 반환해야 합니다.
 
         Raises:
             NotImplementedError: 구현되지 않음
         """
         raise NotImplementedError
-    
+
     @property
     @abstractmethod
     def anno_img_width(self) -> int:
         """원본 annotation 이미지의 넓이를 반환합니다.
 
         int 형식으로 반환해야 합니다.
-        
+
         Raises:
             NotImplementedError: 구현되지 않음
         """
         raise NotImplementedError
-    
+
     @property
     @abstractmethod
     def anno_img_height(self) -> int:
         """원본 annotation 이미지의 높이를 반환합니다.
 
         int 형식으로 반환해야 합니다.
-        
+
         Raises:
             NotImplementedError: 구현되지 않음
         """
         raise NotImplementedError
-    
+
     @property
     @abstractmethod
     def anno_bboxes(self):
@@ -66,17 +68,19 @@ class BaseLabelConverter():
 
         원본 annotation의 모든 bbox로부터 id, transcription, points를
         불러온 뒤, `_construct_word`를 이용해 `self.anno_words`를 만들어줍니다.
-        
+
         `self.anno_words`를 반환하거나, 이와 동일한 형태의 json object를 반환해야 합니다.
-        
+
         Raises:
             NotImplementedError: 구현되지 않음
         """
         raise NotImplementedError
-    
-    def _construct_word(self, id: Union[int, str], transcription: str, points: List[List[int]]) -> None:
+
+    def _construct_word(
+        self, id: Union[int, str], transcription: str, points: List[List[int]]
+    ) -> None:
         """id, transcription, points를 받아 UFO 형식에서 사용할 word 객체를 만듭니다.
-        
+
         받은 parameter를 이용해 `self.anno_words`에 id를 키로 가지는 word 객체를 저장합니다.
 
         Args:
@@ -86,21 +90,17 @@ class BaseLabelConverter():
         """
         if type(id) is int:
             id = str(id).zfill(4)
-            
+
         self.anno_words[id] = {
             "transcription": transcription,
             "points": points,
             "orientation": "Horizontal",
-            "language": [
-                "ko"
-            ],
-            "tags": [
-                "Auto"
-            ],
+            "language": ["ko"],
+            "tags": ["Auto"],
             "confidence": None,
-            "illegibility": False
+            "illegibility": False,
         }
-    
+
     def convert(self, anno_holder: Optional[str] = None) -> None:
         """변환된 annotation 객체를 `self.anno_ufo`에 저장합니다.
 
@@ -119,50 +119,51 @@ class BaseLabelConverter():
                 "worker": "worker",
                 "timestamp": "2023-03-22",
                 "tool_version": "",
-                "source": None
+                "source": None,
             },
             "license_tag": {
                 "usability": True,
                 "public": True,
                 "commercial": True,
                 "type": None,
-                "holder": anno_holder
-            }
+                "holder": anno_holder,
+            },
         }
-        
+
     def save_annotation(self, target_dir="."):
         """변환된 annotation 객체를 저장합니다.
 
         Args:
             target_dir (str, optional): annotation을 저장할 위치. Defaults to ".".
         """
-        save_name = self.json_path.split('/')[-1]
+        save_name = self.json_path.split("/")[-1]
         save_name = os.path.join(target_dir, save_name)
-        with open(save_name, 'w') as f:
+        with open(save_name, "w") as f:
             json.dump({"images": self.anno_ufo}, f, indent=4, ensure_ascii=False)
 
+
 class AIHubLabelConverter(BaseLabelConverter):
-    """AI Hub 공공행정문서 OCR 데이터셋의 annotation파일을 UFO 형식으로 변환합니다.
-    """
+    """AI Hub 공공행정문서 OCR 데이터셋의 annotation파일을 UFO 형식으로 변환합니다."""
+
     @property
     def anno_filename(self):
-        return self.anno_obj['images'][0]['image.file.name']
-    
+        return self.anno_obj["images"][0]["image.file.name"]
+
     @property
     def anno_img_width(self):
-        return self.anno_obj['images'][0]['image.width']
-    
+        return self.anno_obj["images"][0]["image.width"]
+
     @property
     def anno_img_height(self):
-        return self.anno_obj['images'][0]['image.height']
-    
+        return self.anno_obj["images"][0]["image.height"]
+
     @property
     def anno_bboxes(self):
-        anno_words = self.anno_obj['annotations']
+        anno_words = self.anno_obj["annotations"]
         for word in anno_words:
-            id = str(word['id'] + 1).zfill(4)
-            text = word['annotation.text']
-            x, y, w, h = [float(num) for num in word['annotation.bbox']]
-            points = [[x, y], [x+w, y], [x+w, y+h], [x, y+h]]
+            id = str(word["id"] + 1).zfill(4)
+            text = word["annotation.text"]
+            x, y, w, h = [float(num) for num in word["annotation.bbox"]]
+            points = [[x, y], [x + w, y], [x + w, y + h], [x, y + h]]
             self._construct_word(id, text, points)
         return self.anno_words
