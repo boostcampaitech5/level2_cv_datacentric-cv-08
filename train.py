@@ -41,7 +41,6 @@ def parse_args():
 
     return args
 
-
 def make_train_valid_loader(
     image_dir, image_size, input_size, num_workers, batch_size, ignore_tags, val_batch_size
 ):
@@ -51,7 +50,7 @@ def make_train_valid_loader(
         image_size=image_size,
         crop_size=input_size,
         ignore_tags=ignore_tags,
-        color_jitter=False,
+        augmentation=augmentation,
     )
     trainset = EASTDataset(trainset)
     train_num_batches = math.ceil(len(trainset) / batch_size)
@@ -64,7 +63,7 @@ def make_train_valid_loader(
         image_size=image_size,
         crop_size=input_size,
         ignore_tags=ignore_tags,
-        color_jitter=False,
+        augmentation=augmentation,
     )
     validset = EASTDataset(validset)
     valid_num_batches = math.ceil(len(validset) / val_batch_size)
@@ -88,6 +87,7 @@ def do_training(
     max_epoch,
     save_interval,
     ignore_tags,
+    augmentation,
     seed,
     extractor_pth,
     enable_amp,
@@ -110,7 +110,7 @@ def do_training(
             image_size=image_size,
             crop_size=input_size,
             ignore_tags=ignore_tags,
-            color_jitter=False,
+            augmentation=augmentation
         )
         trainset = EASTDataset(trainset)
         train_num_batches = math.ceil(len(trainset) / batch_size)

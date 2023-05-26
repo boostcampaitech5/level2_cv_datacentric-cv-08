@@ -10,6 +10,8 @@ import albumentations as A
 from torch.utils.data import Dataset
 from shapely.geometry import Polygon
 
+import augmentation
+
 
 def cal_distance(x1, y1, x2, y2):
     '''calculate the Euclidean distance'''
@@ -342,7 +344,7 @@ class SceneTextDataset(Dataset):
                  ignore_tags=[],
                  ignore_under_threshold=10,
                  drop_under_threshold=1,
-                 color_jitter=True,
+                 augmentation=None,
                  normalize=True):
         
         # if json == 'train':
@@ -358,7 +360,19 @@ class SceneTextDataset(Dataset):
         self.image_dir = image_dir
 
         self.image_size, self.crop_size = image_size, crop_size
-        self.color_jitter, self.normalize = color_jitter, normalize
+
+        self.morph = []
+        self.transform = None
+
+        if augmentation:
+            self.morph = augmentation['morph']
+            
+            funcs = []
+            for t in augmentation['transform']:
+                funcs.append(__import__('augmentation').__dict__[t]())
+            self.transform = A.Compose(funcs, p=augmentation['p_aug'])
+
+        self.normalize = normalize
 
         self.ignore_tags = ignore_tags
 
@@ -405,14 +419,16 @@ class SceneTextDataset(Dataset):
             image = image.convert('RGB')
         image = np.array(image)
 
-        funcs = []
-        if self.color_jitter:
-            funcs.append(A.ColorJitter(0.5, 0.5, 0.5, 0.25))
-        if self.normalize:
-            funcs.append(A.Normalize(mean=(0.5, 0.5, 0.5), std=(0.5, 0.5, 0.5)))
-        transform = A.Compose(funcs)
+        for m in self.morph:
+            image = __import__('augmentation').__dict__[m](image)
 
-        image = transform(image=image)['image']
+        if self.transform:
+            image = self.transform(image=image)['image']
+
+        if self.normalize:  # TODO: calculate mean and std including new data
+            image = A.Normalize(mean=(0.776, 0.772, 0.767), 
+                                std=(0.218, 0.227, 0.240))(image=image)['image']
+
         word_bboxes = np.reshape(vertices, (-1, 4, 2))
         roi_mask = generate_roi_mask(image, vertices, labels)
 
