@@ -336,8 +336,9 @@ def filter_vertices(vertices, labels, ignore_under=0, drop_under=0):
 
 
 class SceneTextDataset(Dataset):
-    def __init__(self, root_dir,
-                 split='train',
+    def __init__(self,
+                 image_dir,
+                 json_path='train',
                  image_size=2048,
                  crop_size=1024,
                  ignore_tags=[],
@@ -346,16 +347,17 @@ class SceneTextDataset(Dataset):
                  augmentation=None,
                  normalize=True):
         
-        if split == 'train':
-            with open(osp.join(root_dir, 'ufo/{}.json'.format(split)), 'r') as f:
-                anno = json.load(f)
-        else:
-            with open(f'./annotations/{split}.json', 'r') as f:
-                anno = json.load(f)            
+        # if json == 'train':
+        #     with open(osp.join(root_dir, 'ufo/{}.json'.format(json)), 'r') as f:
+        #         anno = json.load(f)
+        # else:
+        with open(json_path, 'r') as f:
+            anno = json.load(f)            
 
         self.anno = anno
         self.image_fnames = sorted(anno['images'].keys())
-        self.image_dir = osp.join(root_dir, 'img', 'train')
+        # self.image_dir = osp.join(root_dir, 'img', 'train')
+        self.image_dir = image_dir
 
         self.image_size, self.crop_size = image_size, crop_size
 
