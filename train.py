@@ -47,7 +47,7 @@ def make_train_valid_loader(
 ):
     trainset = SceneTextDataset(
         image_dir,
-        json_path="/opt/ml/level2_cv_datacentric-cv-08/annotations/split_train.json",
+        json_path="/opt/ml/data/medical/ufo/split_train.json",
         image_size=image_size,
         crop_size=input_size,
         ignore_tags=ignore_tags,
@@ -60,7 +60,7 @@ def make_train_valid_loader(
     )
     validset = SceneTextDataset(
         image_dir,
-        json_path="/opt/ml/level2_cv_datacentric-cv-08/annotations/split_valid.json",
+        json_path="/opt/ml/data/medical/ufo/split_valid.json",
         image_size=image_size,
         crop_size=input_size,
         ignore_tags=ignore_tags,
