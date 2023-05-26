@@ -23,7 +23,7 @@ def main(args):
     year_path_list = ["1994", "1997", "1999", "2001"]
 
     target_label_path = os.path.join(data_path, "labels")
-    target_image_path = os.path.join(data_path, "images")
+    target_image_path = os.path.join(data_path, "img")
 
     os.makedirs(target_label_path, exist_ok=True)
     os.makedirs(target_image_path, exist_ok=True)
@@ -43,6 +43,18 @@ def main(args):
                 os.path.join(image_path, year, file),
                 os.path.join(target_image_path, file),
             )
+    
+    # 기존 데이터셋의 label, image불일치로 인한 오류 해결
+    for file in os.listdir(target_image_path):
+        file_original = file
+        file = file.split("-")
+        if len(file) == 4 and file[1] == "1999" and file[2] == "0002":
+            file[2] = "0001"
+            shutil.move(
+                os.path.join(target_image_path, file_original),
+                os.path.join(target_image_path, "-".join(file))
+            )
+        
 
 
 if __name__ == "__main__":
