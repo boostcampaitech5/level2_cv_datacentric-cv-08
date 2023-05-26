@@ -52,6 +52,7 @@ def do_training(
                 max_epoch,
                 save_interval,
                 ignore_tags,
+                augmentation,
                 seed,
                 extractor_pth,
                 enable_amp,
@@ -62,7 +63,8 @@ def do_training(
         split='train',
         image_size=image_size,
         crop_size=input_size,
-        ignore_tags=ignore_tags
+        ignore_tags=ignore_tags,
+        augmentation=augmentation,
     )
     dataset = EASTDataset(dataset)
     num_batches = math.ceil(len(dataset) / batch_size)
