@@ -2,12 +2,25 @@
     "seed": 42,
     "max_epoch": 150,
     "extractor_pth" : "/opt/ml/input/code/pths/vgg16_bn-6c64b313.pth",
-    "data_dir": "/opt/ml/data/medical",
+    "data_dir": "/opt/ml/input/data/medical",
     "model_dir": "./trained_models",
     "device" : "cuda",
     "num_workers" : 8,
     "image_size" : 2048,
     "input_size" : 1024,
+    "augmentation": {
+        "p_aug": 0.5,
+        "morph": [
+            "dilate", 
+            "erode"
+        ],
+        "transform": [
+            "black_pixel_noise",
+            "white_pixel_noise",
+            "color_jitter",
+            "blur"
+        ]
+    },
     "batch_size" : 8,
     "learning_rate" : 1e-3,
     "save_interval" : 5,
