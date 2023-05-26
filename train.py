@@ -43,11 +43,11 @@ def parse_args():
 
 
 def make_train_valid_loader(
-    data_dir, image_size, input_size, num_workers, batch_size, ignore_tags, val_batch_size
+    image_dir, image_size, input_size, num_workers, batch_size, ignore_tags, val_batch_size
 ):
     trainset = SceneTextDataset(
-        data_dir,
-        split="split_train",
+        image_dir,
+        json_path="/opt/ml/level2_cv_datacentric-cv-08/annotations/split_train.json",
         image_size=image_size,
         crop_size=input_size,
         ignore_tags=ignore_tags,
@@ -59,8 +59,8 @@ def make_train_valid_loader(
         trainset, batch_size=batch_size, shuffle=True, num_workers=num_workers
     )
     validset = SceneTextDataset(
-        data_dir,
-        split="split_valid",
+        image_dir,
+        json_path="/opt/ml/level2_cv_datacentric-cv-08/annotations/split_valid.json",
         image_size=image_size,
         crop_size=input_size,
         ignore_tags=ignore_tags,
@@ -76,8 +76,9 @@ def make_train_valid_loader(
 
 
 def do_training(
-    data_dir,
+    image_dir,
     model_dir,
+    json_path,
     device,
     image_size,
     input_size,
@@ -100,12 +101,12 @@ def do_training(
 
     if validate:
         train_num_batches, train_loader, valid_num_batches, valid_loader = make_train_valid_loader(
-            data_dir, image_size, input_size, num_workers, batch_size, ignore_tags, val_batch_size
+            image_dir, image_size, input_size, num_workers, batch_size, ignore_tags, val_batch_size
         )
     else:
         trainset = SceneTextDataset(
-            data_dir,
-            split="train",
+            image_dir,
+            json_path=json_path,
             image_size=image_size,
             crop_size=input_size,
             ignore_tags=ignore_tags,
