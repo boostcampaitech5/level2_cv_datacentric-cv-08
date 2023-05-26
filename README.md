@@ -3,7 +3,7 @@
 [![All Contributors](https://img.shields.io/badge/all_contributors-5-orange.svg?style=flat-square)](#contributors-)
 <!-- ALL-CONTRIBUTORS-BADGE:END -->
 
-- [ºÎ½ºÆ®Ä·ÇÁ AI Tech](https://boostcamp.connect.or.kr/program_ai.html) - Level2. OCR 
+- [ë¶€ìŠ¤íŠ¸ìº í”„ AI Tech](https://boostcamp.connect.or.kr/program_ai.html) - Level2. OCR 
 
 # Introduction
 <img src="./images/img.png"/>
@@ -11,9 +11,9 @@
 <br />
 
 
-OCR (Optimal Character Recognition) ±â¼úÀº »ç¶÷ÀÌ Á÷Á¢ ¾²°Å³ª ÀÌ¹ÌÁö ¼Ó¿¡ ÀÖ´Â ¹®ÀÚ¸¦ ¾òÀº ´ÙÀ½ ÀÌ¸¦ ÄÄÇ»ÅÍ°¡ ÀÎ½ÄÇÒ ¼ö ÀÖµµ·Ï ÇÏ´Â ±â¼ú·Î, ÄÄÇ»ÅÍ ºñÀü ºÐ¾ß¿¡¼­ ÇöÀç ³Î¸® ¾²ÀÌ´Â ´ëÇ¥ÀûÀÎ ±â¼ú Áß ÇÏ³ªÀÌ´Ù. Á¾ÀÌ ¾ç½Ä, ¿µ¼öÁõ, ¹®¼­, ÁÖ¹Îµî·ÏÁõ, Ä«µå¹øÈ£, ÀÚµ¿Â÷ ¹øÈ£ÆÇ°ú °°ÀÌ ´Ù¾çÇÏ°Ô »ç¿ëµÈ´Ù.
+OCR (Optimal Character Recognition) ê¸°ìˆ ì€ ì‚¬ëžŒì´ ì§ì ‘ ì“°ê±°ë‚˜ ì´ë¯¸ì§€ ì†ì— ìžˆëŠ” ë¬¸ìžë¥¼ ì–»ì€ ë‹¤ìŒ ì´ë¥¼ ì»´í“¨í„°ê°€ ì¸ì‹í•  ìˆ˜ ìžˆë„ë¡ í•˜ëŠ” ê¸°ìˆ ë¡œ, ì»´í“¨í„° ë¹„ì „ ë¶„ì•¼ì—ì„œ í˜„ìž¬ ë„ë¦¬ ì“°ì´ëŠ” ëŒ€í‘œì ì¸ ê¸°ìˆ  ì¤‘ í•˜ë‚˜ì´ë‹¤. ì¢…ì´ ì–‘ì‹, ì˜ìˆ˜ì¦, ë¬¸ì„œ, ì£¼ë¯¼ë“±ë¡ì¦, ì¹´ë“œë²ˆí˜¸, ìžë™ì°¨ ë²ˆí˜¸íŒê³¼ ê°™ì´ ë‹¤ì–‘í•˜ê²Œ ì‚¬ìš©ëœë‹¤.
 
-º» ÇÁ·ÎÁ§Æ®´Â µ¥ÀÌÅÍ¼ÂÀ» Á÷Á¢ ±¸ÃàÇÏ°í ´Ù¾çÇÑ ÃÖÀûÈ­ ¹æ¹ýÀ» ÀÌ¿ëÇÏ¿© ÁÁÀº ¼º´ÉÀ» º¸ÀÌ´Â OCR ¼Ö·ç¼ÇÀ» °³¹ßÇÏ´Â °ÍÀ» ¸ñÇ¥·Î ÇÑ´Ù
+ë³¸ í”„ë¡œì íŠ¸ëŠ” ë°ì´í„°ì…‹ì„ ì§ì ‘ êµ¬ì¶•í•˜ê³  ë‹¤ì–‘í•œ ìµœì í™” ë°©ë²•ì„ ì´ìš©í•˜ì—¬ ì¢‹ì€ ì„±ëŠ¥ì„ ë³´ì´ëŠ” OCR ì†”ë£¨ì…˜ì„ ê°œë°œí•˜ëŠ” ê²ƒì„ ëª©í‘œë¡œ í•œë‹¤
 
 -----
 ## Changes
@@ -21,6 +21,9 @@ OCR (Optimal Character Recognition) ±â¼úÀº »ç¶÷ÀÌ Á÷Á¢ ¾²°Å³ª ÀÌ¹ÌÁö ¼Ó¿¡ ÀÖ´Â ¹
 **`2023-05-25`**: 
 - Add Automatic Mixed Precision
 - Change Argument Parsing Method (Json.config)
+- Add Wandb Logging
+- Add Validation Split
+- Add Early Stopping & save best.pth
 
 **`2023-05-24`**: 
 - initial commit baseline Code
@@ -38,13 +41,13 @@ OCR (Optimal Character Recognition) ±â¼úÀº »ç¶÷ÀÌ Á÷Á¢ ¾²°Å³ª ÀÌ¹ÌÁö ¼Ó¿¡ ÀÖ´Â ¹
 <br />
 
 ----
-## Çù¾÷ ±ÔÄ¢
+## í˜‘ì—… ê·œì¹™
 
-- Ä¿¹Ô ¸Þ½ÃÁö ÄÁº¥¼ÇÀº [conventional commit](https://www.conventionalcommits.org/en/v1.0.0/)À» µû¸¨´Ï´Ù 
-  - [commitizen](https://github.com/commitizen-tools/commitizen)À» »ç¿ëÇÏ¸é ´õ¿í ½±°Ô Ä¿¹ÔÇÒ ¼ö ÀÖ½À´Ï´Ù
-- ÀÛ¾÷Àº ±âº»ÀûÀ¸·Î º°µµÀÇ ºê·£Ä¡¸¦ »ý¼ºÇÏ¿© ÀÛ¾÷ÇÕ´Ï´Ù. ÀÛ¾÷ÀÌ ¿Ï·áµÇ¸é PR·Î ¸®ºä ¹Þ½À´Ï´Ù
-- PR ¸®ºä ÈÄ ¸ÓÁö ¹æ½ÄÀº Squash & Merge¸¦ µû¸¨´Ï´Ù
-  - Merge Àü¿¡ PR Á¦¸ñÀ» µÇµµ·ÏÀÌ¸é convetional commit ÇüÅÂ·Î ¸¸µé¾îÁÖ¼¼¿ä
+- ì»¤ë°‹ ë©”ì‹œì§€ ì»¨ë²¤ì…˜ì€ [conventional commit](https://www.conventionalcommits.org/en/v1.0.0/)ì„ ë”°ë¦…ë‹ˆë‹¤ 
+  - [commitizen](https://github.com/commitizen-tools/commitizen)ì„ ì‚¬ìš©í•˜ë©´ ë”ìš± ì‰½ê²Œ ì»¤ë°‹í•  ìˆ˜ ìžˆìŠµë‹ˆë‹¤
+- ìž‘ì—…ì€ ê¸°ë³¸ì ìœ¼ë¡œ ë³„ë„ì˜ ë¸Œëžœì¹˜ë¥¼ ìƒì„±í•˜ì—¬ ìž‘ì—…í•©ë‹ˆë‹¤. ìž‘ì—…ì´ ì™„ë£Œë˜ë©´ PRë¡œ ë¦¬ë·° ë°›ìŠµë‹ˆë‹¤
+- PR ë¦¬ë·° í›„ ë¨¸ì§€ ë°©ì‹ì€ Squash & Mergeë¥¼ ë”°ë¦…ë‹ˆë‹¤
+  - Merge ì „ì— PR ì œëª©ì„ ë˜ë„ë¡ì´ë©´ convetional commit í˜•íƒœë¡œ ë§Œë“¤ì–´ì£¼ì„¸ìš”
 
 
 
@@ -59,11 +62,11 @@ Thanks goes to these wonderful people ([emoji key](https://allcontributors.org/d
 <!-- markdownlint-disable -->
 <table>
   <tr>
-    <td align="center"><a href="https://github.com/ejrtks1020"><img src="https://github.com/ejrtks1020.png" width="100px;" alt=""/><br /><sub><b>°­³ªÈÆ</b></sub></a><br /><a href="https://github.com/ejrtks1020" title="Code"></td>
-    <td align="center"><a href="https://github.com/lijm1358"><img src="https://github.com/lijm1358.png" width="100px;" alt=""/><br /><sub><b>ÀÌÁ¾¸ñ</b></sub></a><br /><a href="https://github.com/lijm1358" title="Code"></td>
-    <td align="center"><a href="https://github.com/fneaplle"><img src="https://github.com/fneaplle.png" width="100px;" alt=""/><br /><sub><b>±èÈñ»ó</b></sub></a><br /><a href="https://github.com/fneaplle" title="Code"></td>
-    <td align="center"><a href="https://github.com/KimGeunUk"><img src="https://github.com/KimGeunUk.png" width="100px;" alt=""/><br /><sub><b>±è±Ù¿í</b></sub></a><br /><a href="https://github.com/KimGeunUk" title="Code"></td>
-    <td align="center"><a href="https://github.com/jshye"><img src="https://github.com/jshye.png" width="100px;" alt=""/><br /><sub><b>Á¤¼ºÇý</b></sub></a><br /><a href="https://github.com/jshye" title="Code"></td>    
+    <td align="center"><a href="https://github.com/ejrtks1020"><img src="https://github.com/ejrtks1020.png" width="100px;" alt=""/><br /><sub><b>ê°•ë‚˜í›ˆ</b></sub></a><br /><a href="https://github.com/ejrtks1020" title="Code"></td>
+    <td align="center"><a href="https://github.com/lijm1358"><img src="https://github.com/lijm1358.png" width="100px;" alt=""/><br /><sub><b>ì´ì¢…ëª©</b></sub></a><br /><a href="https://github.com/lijm1358" title="Code"></td>
+    <td align="center"><a href="https://github.com/fneaplle"><img src="https://github.com/fneaplle.png" width="100px;" alt=""/><br /><sub><b>ê¹€í¬ìƒ</b></sub></a><br /><a href="https://github.com/fneaplle" title="Code"></td>
+    <td align="center"><a href="https://github.com/KimGeunUk"><img src="https://github.com/KimGeunUk.png" width="100px;" alt=""/><br /><sub><b>ê¹€ê·¼ìš±</b></sub></a><br /><a href="https://github.com/KimGeunUk" title="Code"></td>
+    <td align="center"><a href="https://github.com/jshye"><img src="https://github.com/jshye.png" width="100px;" alt=""/><br /><sub><b>ì •ì„±í˜œ</b></sub></a><br /><a href="https://github.com/jshye" title="Code"></td>    
   </tr>
 </table>
 
