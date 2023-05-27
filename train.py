@@ -43,7 +43,7 @@ def parse_args():
 
 
 def make_train_valid_loader(
-    image_dir, image_size, input_size, num_workers, batch_size, ignore_tags, val_batch_size
+    image_dir, image_size, input_size, num_workers, batch_size, ignore_tags, val_batch_size, augmentation
 ):
     trainset = SceneTextDataset(
         image_dir,
@@ -101,7 +101,7 @@ def do_training(
 
     if validate:
         train_num_batches, train_loader, valid_num_batches, valid_loader = make_train_valid_loader(
-            image_dir, image_size, input_size, num_workers, batch_size, ignore_tags, val_batch_size
+            image_dir, image_size, input_size, num_workers, batch_size, ignore_tags, val_batch_size, augmentation
         )
     else:
         trainset = SceneTextDataset(
