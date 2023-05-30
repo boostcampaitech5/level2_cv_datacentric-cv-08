@@ -4,4 +4,5 @@ pths/
 trained_models/
 wandb/
 .empty/
+preprocessed/
 nohup.out

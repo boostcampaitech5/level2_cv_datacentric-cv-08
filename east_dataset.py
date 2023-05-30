@@ -131,10 +131,19 @@ class EASTDataset(Dataset):
         self.dataset = dataset
         self.map_scale = map_scale
         self.to_tensor = to_tensor
+        if isinstance(self.dataset, dict):
+            self.image_fnames = list(self.dataset.keys())
 
     def __getitem__(self, idx):
-        image, word_bboxes, roi_mask = self.dataset[idx]
-        score_map, geo_map = generate_score_geo_maps(image, word_bboxes, map_scale=self.map_scale)
+        if isinstance(self.dataset, dict):
+            processed_data = self.dataset[self.image_fnames[idx]]
+            image = processed_data['image']
+            score_map = processed_data['score_map']
+            geo_map = processed_data['geo_map']
+            roi_mask = processed_data['roi_mask']
+        else:
+            image, word_bboxes, roi_mask = self.dataset[idx]
+            score_map, geo_map = generate_score_geo_maps(image, word_bboxes, map_scale=self.map_scale)
 
         mask_size = int(image.shape[0] * self.map_scale), int(image.shape[1] * self.map_scale)
         roi_mask = cv2.resize(roi_mask, dsize=mask_size)
