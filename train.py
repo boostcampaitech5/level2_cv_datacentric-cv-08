@@ -15,8 +15,12 @@ from east_dataset import EASTDataset
 from dataset import SceneTextDataset
 from model import EAST
 
-from utils import read_json, seed_everything
+from utils import read_json, seed_everything, seed_worker
 import wandb
+import numpy as np
+import random
+import pickle
+from preprocess import preprocess
 
 
 def parse_args():
@@ -41,8 +45,17 @@ def parse_args():
 
     return args
 
+
 def make_train_valid_loader(
-    image_dir, image_size, input_size, num_workers, batch_size, ignore_tags, val_batch_size, augmentation
+    image_dir,
+    image_size,
+    input_size,
+    num_workers,
+    batch_size,
+    ignore_tags,
+    val_batch_size,
+    augmentation,
+    seed,
 ):
     trainset = SceneTextDataset(
         image_dir,
@@ -54,8 +67,17 @@ def make_train_valid_loader(
     )
     trainset = EASTDataset(trainset)
     train_num_batches = math.ceil(len(trainset) / batch_size)
+
+    g = torch.Generator()
+    g.manual_seed(seed)
+
     train_loader = DataLoader(
-        trainset, batch_size=batch_size, shuffle=True, num_workers=num_workers
+        trainset,
+        batch_size=batch_size,
+        shuffle=True,
+        num_workers=num_workers,
+        generator=g,
+        worker_init_fn=seed_worker(seed),
     )
     validset = SceneTextDataset(
         image_dir,
@@ -67,8 +89,17 @@ def make_train_valid_loader(
     )
     validset = EASTDataset(validset)
     valid_num_batches = math.ceil(len(validset) / val_batch_size)
+
+    g = torch.Generator()
+    g.manual_seed(seed)
+
     valid_loader = DataLoader(
-        validset, batch_size=val_batch_size, shuffle=False, num_workers=num_workers
+        validset,
+        batch_size=val_batch_size,
+        shuffle=False,
+        num_workers=num_workers,
+        generator=g,
+        worker_init_fn=seed_worker(seed),
     )
 
     return train_num_batches, train_loader, valid_num_batches, valid_loader
@@ -96,26 +127,48 @@ def do_training(
     val_batch_size,
     patience_limit,
     num_accumulation_step,
+    processed_data_dir,
 ):
     assert num_accumulation_step >= 0, "Gradient Accumulation step must be >= 0"
 
     if validate:
         train_num_batches, train_loader, valid_num_batches, valid_loader = make_train_valid_loader(
-            image_dir, image_size, input_size, num_workers, batch_size, ignore_tags, val_batch_size, augmentation
+            image_dir,
+            image_size,
+            input_size,
+            num_workers,
+            batch_size,
+            ignore_tags,
+            val_batch_size,
+            augmentation,
+            seed,
         )
     else:
-        trainset = SceneTextDataset(
-            image_dir,
-            json_path=json_path,
-            image_size=image_size,
-            crop_size=input_size,
-            ignore_tags=ignore_tags,
-            augmentation=augmentation
-        )
+        if processed_data_dir:
+            with open(os.path.join(processed_data_dir, "processed_data.pickle"), "rb") as fr:
+                trainset = pickle.load(fr)
+        else:
+            trainset = SceneTextDataset(
+                image_dir,
+                json_path=json_path,
+                image_size=image_size,
+                crop_size=input_size,
+                ignore_tags=ignore_tags,
+                augmentation=augmentation,
+            )
         trainset = EASTDataset(trainset)
         train_num_batches = math.ceil(len(trainset) / batch_size)
+
+        g = torch.Generator()
+        g.manual_seed(seed)
+
         train_loader = DataLoader(
-            trainset, batch_size=batch_size, shuffle=True, num_workers=num_workers
+            trainset,
+            batch_size=batch_size,
+            shuffle=True,
+            num_workers=num_workers,
+            worker_init_fn=seed_worker(seed),
+            generator=g,
         )
 
     device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
@@ -280,7 +333,9 @@ def main(args):
         name=args.project_name,
         config=args,
     )
-
+    if args.processed_data_dir:
+        if not os.path.exists(os.path.join(args.processed_data_dir, "processed_data.pickle")):
+            preprocess(args)
     do_training(**args.__dict__)
 
 
