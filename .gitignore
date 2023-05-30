@@ -4,4 +4,4 @@ pths/
 trained_models/
 wandb/
 .empty/
-
+preprocessed/
