@@ -56,6 +56,7 @@ def make_train_valid_loader(
     val_batch_size,
     augmentation,
     seed,
+    resize_with_padding
 ):
     trainset = SceneTextDataset(
         image_dir,
@@ -64,6 +65,7 @@ def make_train_valid_loader(
         crop_size=input_size,
         ignore_tags=ignore_tags,
         augmentation=augmentation,
+        resize_with_padding=resize_with_padding
     )
     trainset = EASTDataset(trainset)
     train_num_batches = math.ceil(len(trainset) / batch_size)
@@ -86,6 +88,7 @@ def make_train_valid_loader(
         crop_size=input_size,
         ignore_tags=ignore_tags,
         augmentation=augmentation,
+        resize_with_padding=resize_with_padding
     )
     validset = EASTDataset(validset)
     valid_num_batches = math.ceil(len(validset) / val_batch_size)
@@ -128,6 +131,7 @@ def do_training(
     patience_limit,
     num_accumulation_step,
     processed_data_dir,
+    resize_with_padding
 ):
     assert num_accumulation_step >= 0, "Gradient Accumulation step must be >= 0"
 
@@ -142,6 +146,7 @@ def do_training(
             val_batch_size,
             augmentation,
             seed,
+            resize_with_padding
         )
     else:
         if processed_data_dir:
@@ -155,6 +160,7 @@ def do_training(
                 crop_size=input_size,
                 ignore_tags=ignore_tags,
                 augmentation=augmentation,
+                resize_with_padding=resize_with_padding
             )
         trainset = EASTDataset(trainset)
         train_num_batches = math.ceil(len(trainset) / batch_size)

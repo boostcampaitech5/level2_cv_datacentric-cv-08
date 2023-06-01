@@ -17,7 +17,7 @@ import pickle
 from utils import read_json
 from argparse import ArgumentParser
 from PIL import Image
-
+from augmentation import resize_padding
 
 def preprocess(args):
     ignore_tags = args.ignore_tags
@@ -25,10 +25,11 @@ def preprocess(args):
     drop_under_threshold = 1
     image_size = args.image_size
     crop_size = args.input_size
+    resize_with_padding = resize_padding(args.input_size)
 
     morph = []
     transform = []
-    if args.augmentation:
+    if args.augmentation and not args.resize_with_padding:
         morph = args.augmentation["morph"]
 
         funcs = []
@@ -70,21 +71,38 @@ def preprocess(args):
         vertices, labels = filter_vertices(
             vertices, labels, ignore_under=ignore_under_threshold, drop_under=drop_under_threshold
         )
+
         image = Image.open(image_fpath)
-        image, vertices = resize_img(image, vertices, image_size)
-        image, vertices = adjust_height(image, vertices)
-        # image, vertices = rotate_img(image, vertices)/
-        image, vertices = crop_img(image, vertices, labels, crop_size)
 
-        if image.mode != "RGB":
-            image = image.convert("RGB")
-        image = np.array(image)
+        if not args.resize_with_padding:
+            image, vertices = resize_img(image, vertices, image_size)
+            image, vertices = adjust_height(image, vertices)
+            image, vertices = rotate_img(image, vertices)
+            image, vertices = crop_img(image, vertices, labels, crop_size)
 
-        for m in morph:
-            image = __import__("augmentation").__dict__[m](image)
+            if image.mode != "RGB":
+                image = image.convert("RGB")
+            image = np.array(image)
 
-        if transform:
-            image = transform(image=image)["image"]
+            for m in morph:
+                image = __import__("augmentation").__dict__[m](image)
+
+            if transform:
+                image = transform(image=image)["image"]
+
+        else:
+            if image.mode != "RGB":
+                image = image.convert("RGB")
+            image = np.array(image)
+
+            output = resize_with_padding(image=image, keypoints=vertices)
+            image = output['image']
+            vertices = output['keypoints']
+            if isinstance(vertices, list):
+                vertices = np.array(vertices)
+            else:
+                print("type : ", type(vertices), ", ", vertices)
+                continue
 
         image = A.Normalize(mean=(0.776, 0.772, 0.767), std=(0.218, 0.227, 0.240))(image=image)[
             "image"

@@ -6,3 +6,4 @@ wandb/
 .empty/
 preprocessed/
 nohup.out
+*.ipynb

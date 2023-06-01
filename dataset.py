@@ -345,7 +345,8 @@ class SceneTextDataset(Dataset):
                  ignore_under_threshold=10,
                  drop_under_threshold=1,
                  augmentation=None,
-                 normalize=True):
+                 normalize=True,
+                 resize_with_padding=False):
         
         # if json == 'train':
         #     with open(osp.join(root_dir, 'ufo/{}.json'.format(json)), 'r') as f:
@@ -364,7 +365,9 @@ class SceneTextDataset(Dataset):
         self.morph = []
         self.transform = None
 
-        if augmentation:
+        self.resize_with_padding = resize_with_padding
+
+        if augmentation and not resize_with_padding:
             self.morph = augmentation['morph']
             
             funcs = []
@@ -410,20 +413,38 @@ class SceneTextDataset(Dataset):
         )
 
         image = Image.open(image_fpath)
-        image, vertices = resize_img(image, vertices, self.image_size)
-        image, vertices = adjust_height(image, vertices)
-        image, vertices = rotate_img(image, vertices)
-        image, vertices = crop_img(image, vertices, labels, self.crop_size)
 
-        if image.mode != 'RGB':
-            image = image.convert('RGB')
-        image = np.array(image)
 
-        for m in self.morph:
-            image = __import__('augmentation').__dict__[m](image)
 
-        if self.transform:
-            image = self.transform(image=image)['image']
+        if not self.resize_with_padding:
+            if isinstance(self.image_size, list):
+                image_size = self.image_size[np.random.randint(len(self.image_size))]
+                image, vertices = resize_img(image, vertices, image_size)
+            else:
+                image, vertices = resize_img(image, vertices, self.image_size)
+            image, vertices = adjust_height(image, vertices)
+            image, vertices = rotate_img(image, vertices, 5)
+            image, vertices = crop_img(image, vertices, labels, self.crop_size)
+
+            if image.mode != 'RGB':
+                image = image.convert('RGB')
+            image = np.array(image)
+
+            for m in self.morph:
+                image = __import__('augmentation').__dict__[m](image)
+
+            if self.transform:
+                image = self.transform(image=image)['image']
+        else:
+            
+            if image.mode != 'RGB':
+                image = image.convert('RGB')
+            image = np.array(image)
+
+            output = __import__('augmentation').__dict__["resize_padding"](image=image, keypoints=vertices)
+            image = output['image']
+            vertices = output['keypoints']
+            vertices = np.array(vertices)        
 
         if self.normalize:  # TODO: calculate mean and std including new data
             image = A.Normalize(mean=(0.776, 0.772, 0.767), 

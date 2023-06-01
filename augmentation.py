@@ -59,3 +59,9 @@ def color_jitter(p=0.5):
 def blur(p=0.5):
     transform = A.Blur(blur_limit=5, p=p)
     return transform
+
+def resize_padding(input_size):
+    transform = A.Compose([
+        A.LongestMaxSize(input_size), A.PadIfNeeded(min_height=input_size, min_width=input_size,
+                                                  position=A.PadIfNeeded.PositionType.TOP_LEFT)])
+    return transform

@@ -2,29 +2,20 @@
     "seed": 50,
     "max_epoch": 150,
     "extractor_pth": "/opt/ml/input/code/pths/vgg16_bn-6c64b313.pth",
-    "image_dir": "/opt/ml/data/medical/img_aihub_200",
-    "model_dir": "./trained_models/aihub_301_no-rotate",
-    "json_path": "/opt/ml/data/medical/ufo/train_aihub_200.json",
+    "image_dir": "/opt/ml/data/medical/img_300",
+    "model_dir": "./trained_models/thresholding_1024_rotate-5",
+    "json_path": "/opt/ml/data/medical/ufo/train_300_stamp.json",
     "device": "cuda",
     "num_workers": 8,
-    "image_size": 2048,
-    "input_size": 1024,
-    "augmentation": {
-        "p_aug": 0.5,
-        "morph": [
-            "dilate",
-            "erode"
-        ],
-        "transform": [
-            "black_pixel_noise",
-            "white_pixel_noise",
-            "color_jitter",
-            "blur"
-        ]
-    },
-    "batch_size": 8,
-    "learning_rate": 1e-3,
-    "save_interval": 5,
+    "image_size": [
+        2048,
+        3072
+    ],
+    "input_size": 2048,
+    "augmentation": false,
+    "batch_size": 2,
+    "learning_rate": 1e-4,
+    "save_interval": 1,
     "ignore_tags": [
         "masked",
         "excluded-region",
@@ -32,10 +23,11 @@
         "stamp"
     ],
     "enable_amp": false,
-    "project_name": "knh_aihub-plus-301_no-rotate",
+    "project_name": "knh_non-thresholding_2048_rotate-5",
     "validate": false,
     "val_batch_size": 1,
-    "patience_limit": 20,
+    "patience_limit": 150,
     "num_accumulation_step": 0,
-    "processed_data_dir": "./preprocessed/aihub_301_no-rotate"
+    "processed_data_dir": false,
+    "resize_with_padding": false
 }
