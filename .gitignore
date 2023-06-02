@@ -1,0 +1,8 @@
+__pycache__/
+predictions/
+pths/
+trained_models/
+wandb/
+.empty/
+preprocessed/
+nohup.out
